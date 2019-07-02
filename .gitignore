@@ -1,3 +1,4 @@
 *.h5
 nohup.out
 segmentation_models/
+.ipynb_checkpoints/
