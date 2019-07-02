@@ -26,3 +26,15 @@ can use Carina's resnet code as a starting place.
 3. Hopefully Jonathan B will have Osemis working for fast shared labeling (then we will recruit others in lab to label!)
 
 --> MID-SURE abstract will focus on whole image classification line +/-
+
+--------
+6/27/2019
+
+1. Learning about tubes/lines
+
+2. Going to try Res+NET + U+NET segmenter after initial res-net classification of line present
+
+3.  As time allows, start thinking about SIIM Pneumothorax Challenge.  Will discuss week of July 8.  
+
+4. Try to set up shadow of radiologist.  Meet with radiologist.
+
