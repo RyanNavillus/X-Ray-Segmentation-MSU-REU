@@ -1,5 +1,11 @@
 # sullivan_ryan
 Activity tracking for Ryan, REU Summer 2019
+The goal of this project is to automatically segment lines in pediatric chest radiographs. The current approach utilizes a U-Net architecture, with a series of different backbones that replace the default U-Net encoder path.
+
+<div style="display:block; width:100%">
+    <img src="./Samples/1563654917.593671_prediction-3.png#thumbnail" alt="" width="49%" height="49%" style="display: inline" />
+    <img src="./Samples/True_prediction-3.png#thumbnail" alt="" width="49%" height="49%" style="display: inline" />
+</div>
 
 All data used in this project is from the rib fracture dataset. At the time of writing this, that is located on the Midi Lab workstation, CookieMonster, at `/data/mididata/rib_fracture_id/`
 
