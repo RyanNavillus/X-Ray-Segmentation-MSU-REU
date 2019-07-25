@@ -25,6 +25,7 @@ import sys
 import tensorflow as tf
 import time
 
+from keras import backend as K
 from keras.applications.resnet50 import ResNet50
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
 from keras.layers import Flatten, Dense, Dropout, Conv2D, MaxPooling2D
@@ -440,6 +441,8 @@ from keras.wrappers.scikit_learn import KerasClassifier
 from sklearn.model_selection import GridSearchCV
 
 def create_model(training=0, learning_rate=0.0001, optimizer="Adam"):    
+    K.clear_session()
+
     # Create the ResNet50 base model Dense(1000) layers
     resnet_base = ResNet50(weights="imagenet", input_shape=(input_size[0], input_size[1], 3), include_top=False, pooling="avg")
     
@@ -497,7 +500,7 @@ model = KerasClassifier(build_fn=create_model, epochs=20, verbose=2)
 
 
 params = {
-    "batch_size": [16, 8, 2],
+    "batch_size": [8, 2],
     "training": [102, 200],
     "learning_rate": [0.001, 0.0001, 0.00001],
     "optimizer": ['SGD', 'RMSprop', 'Adam', 'Nadam'],
@@ -511,6 +514,8 @@ params = {
 
 
 print("Starting Grid Search\n")
+print(samples.shape)
+print(labels.shape)
 grid = GridSearchCV(estimator=model, param_grid=params, n_jobs=1)
 grid_result = grid.fit(samples, labels)
 print("Finished Grid Search\n")

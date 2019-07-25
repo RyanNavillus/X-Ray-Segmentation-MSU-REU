@@ -2,3 +2,4 @@
 nohup.out
 segmentation_models/
 .ipynb_checkpoints/
+UNET-with-New-ResNet50_weights/
