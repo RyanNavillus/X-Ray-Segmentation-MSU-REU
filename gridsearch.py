@@ -15,12 +15,13 @@ import os
 import classification_models
 import segmentation_models
 import matplotlib.pyplot as plt
+import tensorflow as tf
 from scipy import io
 from sklearn.preprocessing import normalize
 from keras import backend as K
 from keras.callbacks import EarlyStopping, ReduceLROnPlateau, ModelCheckpoint
 from keras.layers import Dense
-from keras.optimizers import Adam
+from keras.optimizers import Adam, SGD, RMSprop
 from segmentation_models import Unet
 from segmentation_models.segmentation_models.utils import set_trainable
 from tqdm import tqdm
@@ -111,8 +112,7 @@ print(
 )
 
 
-smooth = 1.0
-
+epsilon = tf.convert_to_tensor(K.epsilon(), np.float32)
 
 def dice_coef(y_true, y_pred):
     y_true = y_true[:, :, :, 1]
@@ -120,18 +120,23 @@ def dice_coef(y_true, y_pred):
     y_true_f = K.flatten(y_true)
     y_pred_f = K.flatten(y_pred)
     intersection = K.sum(y_true_f * y_pred_f)
-    return (2.0 * intersection + smooth) / (K.sum(y_true_f) + K.sum(y_pred_f) + smooth)
-
+    return (2.0 * intersection + epsilon) / (K.sum(y_true_f) + K.sum(y_pred_f) + epsilon)
 
 def dice_coef_loss(y_true, y_pred):
     return 1 - dice_coef(y_true, y_pred)
 
-def exact_dice_coef(y_true, y_pred):
-    y_true_f = K.batch_flatten(y_true)
-    y_pred_f = K.batch_flatten(y_pred)
-    intersection = 2. * K.sum(y_true_f * y_pred_f, axis=1, keepdims=True) + smooth
-    union = K.sum(y_true_f, axis=1, keepdims=True) + K.sum(y_pred_f, axis=1, keepdims=True) + smooth
-    return K.mean(intersection / union)
+def weighted_bce(y_true, y_pred):
+    output = K.clip(y_pred, 1e-7, 1. - 1e-7)
+    output = K.log(output / (1 - output))
+
+    p = K.sum(K.flatten(y_true[...,:1])) / (224**2)
+    maximum_w = 1 / K.log(1.02 + 0)
+    minimum_w = 1 / K.log(1.02 + 1)
+    w = 1 / K.log(1.02 + p)
+    scaled_w = (w - minimum_w) / (maximum_w - minimum_w)
+    weighted_y_true = scaled_w * y_true
+
+    return tf.nn.sigmoid_cross_entropy_with_logits(labels=weighted_y_true, logits=output)
 
 def cce(y_true, y_pred):
     y_pred = K.clip(y_pred, 1e-7, 1 - 1e-7)
@@ -141,55 +146,94 @@ def cce(y_true, y_pred):
 def cce_plus_dice_coef_loss(y_true, y_pred):
     return 0.5*cce(y_true, y_pred) + 0.5*dice_coef_loss(y_true, y_pred)
 
+def weighted_bce_plus_dice_coef_loss(y_true, y_pred):
+    return 0.5*weighted_bce(y_true, y_pred) + 0.5*dice_coef_loss(y_true, y_pred)
+
+def unbalanced_weighted_bce_plus_dice_coef_loss(y_true, y_pred):
+    return 0.1*weighted_bce(y_true, y_pred) + 0.9*dice_coef_loss(y_true, y_pred)
+
+
+# Hyper parameters
+
+learning_rate = np.random.uniform(0.00001, 0.001)
+batch_size = np.random.randint(1,5) * 2
+optimizer_choice = np.random.randint(0,3)
+loss_choice = np.random.randint(0,3)
+optimizers = {
+    "Adam": Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, epsilon=None, decay=0.0, amsgrad=False),
+    "SGD": SGD(lr=learning_rate, momentum=0.9),
+    "RMSprop": RMSprop(lr=learning_rate, rho=0.9, epsilon=None, decay=0.0)
+}
+loss_fns = {
+    "cce": cce,
+    "weighted_bce": weighted_bce,
+    "dice_loss": dice_coef_loss,
+    "cce+dice_loss": cce_plus_dice_coef_loss,
+    "weighted_bce+dice_loss": weighted_bce_plus_dice_coef_loss,
+    "unbalanced_weighted_bce+dice_loss": unbalanced_weighted_bce_plus_dice_coef_loss,
+}
+optimizer = optimizers[list(optimizers.keys())[optimizer_choice]]
+loss = loss_fns[list(loss_fns.keys())[loss_choice]]
+print("Learning Rate: {}".format(learning_rate))
+print("Batch Size: {}".format(batch_size))
+print("Optimizer: {}".format(list(optimizers.keys())[optimizer_choice]))
+print("Loss Function: {}".format(list(loss_fns.keys())[loss_choice]))
+
 
 # Create UNet model with custom resnet weights
 model = Unet(
     "efficientnetb3",
     classes=2,
     input_shape=(512, 512, 3),
-    encoder_weights="imagenet",
+    encoder_weights=None,
     activation="softmax",
 )
 
 
-model.summary()
-
-
 model.compile(
-    optimizer=Adam(lr=0.0001),
-    loss=cce_plus_dice_coef_loss,
+    optimizer=optimizer,
+    loss=loss,
     metrics=["accuracy", dice_coef],
 )
 
 
-# Choose checkpoint path
-checkpoint_path = "./UNET-with-EfficientNetB3_weights"
-os.makedirs(checkpoint_path, exist_ok=True)
-
 # Create early stopping callback
 early_stopping = EarlyStopping(
-    monitor="val_dice_coef", mode="max", patience=100, verbose=1
+    monitor="val_dice_coef", mode="max", patience=50, verbose=1
 )
 
-# Create checkpointer to save best model weights
-checkpointer = ModelCheckpoint(
-    filepath=checkpoint_path + "/efficientnetb3_cce_weights.h5",
-    verbose=1,
-    monitor="val_dice_coef",
-    mode="max",
-    save_best_only=True,
-)
-
-# TEST: ReduceLROnPlateau
-callback_list = [checkpointer, early_stopping]
-
+callback_list = [early_stopping]
 
 res_history = model.fit(
     X_train,
     Y_train,
     validation_data=(X_val, Y_val),
-    batch_size=8,
-    epochs=2000,
+    batch_size=batch_size,
+    epochs=500,
     verbose=1,
     callbacks=callback_list,
 )
+
+# Evaluate Model
+loss, accuracy, dice = model.evaluate(X_test, Y_test, verbose=0)
+n_epochs = len(res_history.history['loss'])
+print('Number of Epochs: {}'.format(n_epochs))
+print('Test loss: {:.5f}'.format(loss))
+print('Test accuracy: {:.5f}'.format(accuracy))
+print('Dice coef: {:.5f}'.format(dice))
+
+# TODO: Create file and save hyperparameters and test results
+hp_path = "./Hyperparameter-Search-Fixed/"
+os.makedirs(hp_path, exist_ok=True)
+
+hp_file = open(os.path.join(hp_path, "{:.10f}.txt".format(learning_rate)), "w")
+hp_file.write("Learning Rate: {:7f}\n".format(learning_rate))
+hp_file.write("Batch Size: {}\n".format(batch_size))
+hp_file.write("Optimizer: {}\n".format(list(optimizers.keys())[optimizer_choice]))
+hp_file.write("Loss Function: {}\n".format(list(loss_fns.keys())[loss_choice]))
+hp_file.write('\n--- Results ---\n')
+hp_file.write('Number of Epochs: {}'.format(n_epochs))
+hp_file.write('Test loss: {:.5f}\n'.format(loss))
+hp_file.write('Test accuracy: {:.5f}\n'.format(accuracy))
+hp_file.write('Dice coef: {:.5f}\n'.format(dice))
+hp_file.close()
