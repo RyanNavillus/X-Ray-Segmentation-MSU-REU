@@ -42,18 +42,6 @@ def load_mask_mat(path):
     final_mask_list = np.array(np.append(background, foreground, axis=3))
     return final_mask_list
 
-#def load_mask_mat(path):
-#    """Load grayscale image from path"""
-#    #image = io.loadmat(path, appendmat=False)['maskImage'][0][0][0][0][0].astype(np.float32)
-#    # There are multiple masks here. Figure it out
-#    image = io.loadmat(path, appendmat=False)['maskImage']['maskCrop'][0][0][0][:]
-#    print(image.shape)
-#
-#    scaled_image = cv2.resize(image, input_size)
-#    reshaped_image = np.reshape(scaled_image, (input_size[0], input_size[1], 1))
-#    split_channel_image = np.append(reshaped_image, 1 - reshaped_image, axis=2)
-#    return split_channel_image
-
 def plot_mask(sample, mask, figsize=(10,10), title=""):
     mask = np.squeeze(mask)
     plt.figure(figsize=figsize)
@@ -63,6 +51,7 @@ def plot_mask(sample, mask, figsize=(10,10), title=""):
     plt.title(title)
     plt.show()
 
+# Display all images matching the path below
 for filename in sorted(glob.glob("/data/midi-lab-general/osemis_annotations/osemis_annotation_file_to_masks/Masks/*_crop_image.mat")):
     mask_path = filename[:-15] + "_line_mask.mat"
     print(filename)

@@ -36,8 +36,11 @@ from segmentation_models.backbones import get_preprocessing
 from segmentation_models.metrics import iou_score
 from tqdm import tqdm
 
+# Set uid of model to test
 uid="1563659959.360829"
 hyperparams = {}
+
+# Import Hyperparameters
 with open("./Training/{}.txt".format(uid)) as param_file:
     for line in param_file:
         if "Model" in line:
@@ -93,40 +96,6 @@ now = datetime.now()
 filename = str(uid)
 print("Filename: {}".format(filename))
 
-#outfile_path = "/mnt/home/f0008576/Documents/Results/Training/" + filename + ".txt"
-#print("Writing to {}".format(outfile_path))
-#with open(outfile_path, "w") as outfile:
-#    outfile.write(
-#        "Date and Time: {}\n".format(datetime.now().strftime("%m/%d/%Y %H:%M %Ss"))
-#    )
-#    outfile.write("========== Model ==========\n")
-#    outfile.write("Model: {}\n".format(model_type))
-#    if model_type == "unet":
-#        outfile.write("Filter List: {}\n".format(unet_filters))
-#    elif model_type == "fpn":
-#        outfile.write("Filter count: {}\n".format(fpn_filters))
-#        outfile.write("Spatial Dropout Rate: {}\n".format(fpn_dropout))
-#    outfile.write("Backbone: {}\n".format(model_backbone))
-#    outfile.write("Weight Initialization: {}\n".format(model_weights))
-#
-#    outfile.write("\n========== Data ==========\n")
-#    outfile.write(
-#        "Train/Validation/Test Split: {}/{}/{}\n".format(
-#            1-val_split-test_split, val_split, test_split
-#        )
-#    )
-#
-#    outfile.write("\n========== Training ==========\n")
-#    outfile.write("Optimizer: {}\n".format(optimizer.__class__.__name__))
-#    outfile.write("Learning Rate: {}\n".format(learning_rate))
-#    outfile.write("Decay: {}\n".format(decay))
-#    outfile.write("Loss: {}\n".format(loss))
-#    outfile.write("Epochs: {}\n".format(epochs))
-#    outfile.write("Early Stopping Metric: {}\n".format(early_stopping_metric))
-#    outfile.write("Patience: {}\n".format(patience))
-#    outfile.write("Batch Size: {}\n\n".format(batch_size))
-
-
 def load_image(path):
     """Load grayscale image from path"""
     return cv2.resize(cv2.imread(path, 1), input_size)
@@ -172,6 +141,7 @@ def load_mask_mat(path):
     return final_mask_list
 
 
+# Import data
 X = []
 Y = []
 data_dir = "/mnt/home/f0008576/Masks/*.mat"
@@ -185,6 +155,7 @@ Y = np.reshape(np.array(Y), (len(X), input_size[0], input_size[1], 2))
 print(len(X))
 print(len(Y))
 
+# Get percentage of foreground pixels
 line_ratio = 0
 for image in Y[:, :, :, 0]:
     image = np.round(image, decimals=0)
@@ -195,12 +166,14 @@ print("Percentage of line pixels: {}%".format(100 * line_ratio / len(Y)))
 
 
 n = len(X)
+# Choose first index with rounding adjustment (0.5)
 sp1 = int(
     ((1 - val_split - test_split) * n) - 0.5
-)  # Choose first index with rounding adjustment (0.5)
+)
+# Choose second index with rounding adjustment (0.5)
 sp2 = int(
     ((1 - test_split) * n) - 0.5
-)  # Choose second index with rounding adjustment (0.5)
+)
 X_train, Y_train = X[:sp1], Y[:sp1]
 X_val, Y_val = X[sp1:sp2], Y[sp1:sp2]
 X_test, Y_test = X[sp2:], Y[sp2:]
@@ -210,8 +183,8 @@ print(
     )
 )
 
+# Define Loss functions
 epsilon = tf.convert_to_tensor(K.epsilon(), np.float32)
-
 
 def dice_coef(y_true, y_pred):
     y_true = y_true[..., 1]
@@ -316,39 +289,6 @@ checkpointer = ModelCheckpoint(
 )
 
 callback_list = [checkpointer, early_stopping]
-
-#history = model.fit(
-#    X_train,
-#    Y_train,
-#    validation_data=(X_val, Y_val),
-#    batch_size=batch_size,
-#    epochs=epochs,
-#    verbose=1,
-#    callbacks=callback_list,
-#)
-
-# Save history
-#history_path = "/mnt/home/f0008576/Documents/Results/History/" + filename
-#print("Writing history dictionary to {}".format(history_path))
-#with open(history_path, 'w') as history_file:
-#    json.dump(history.history, history_file)
-
-# Evaluate model
-#model.load_weights(weights_filepath)
-#print("X test n = {}".format(len(X_test)))
-#print("Y test n = {}".format(len(Y_test)))
-#loss, accuracy, dice, iou = model.evaluate(X_test, Y_test, verbose=0)
-#print('Test loss: ', loss)
-#print('Test accuracy: ', accuracy)
-#print('Dice coef: ', dice)
-#print('IoU: ', iou)
-
-#with open(outfile_path, "a") as outfile:
-#    outfile.write('Test loss: {}\n'.format(loss))
-#    outfile.write('Test accuracy: {}\n'.format(accuracy))
-#    outfile.write('Dice coef: {}\n'.format(dice))
-#    outfile.write('IoU: {}\n'.format(iou))
-
 
 def print_sample(sample, uid, test_idx, title=None, figsize=(10,10)):
     plt.ioff()

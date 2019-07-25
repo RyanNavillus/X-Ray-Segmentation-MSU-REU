@@ -48,31 +48,31 @@ def load_mat(path):
 
 def load_mask_mat(path):
     """Load grayscale image from path"""
-    # import matlab files, extracting array of masks
+    # Import matlab files, extracting array of masks
     mask_list = np.stack(
         io.loadmat(path, appendmat=False)["maskImage"]["maskCrop"][0][0][0], axis=0
     )
     line_num = len(mask_list)
 
-    # create placeholder arrays
+    # Create placeholder arrays
     foreground = np.zeros((input_size[0], input_size[1], 1))
     background = np.ones((input_size[0], input_size[1], 1))
 
-    # for each mask, scale it, reshape it, and add it to the foreground
+    # For each mask, scale it, reshape it, and add it to the foreground
     for i, mask in enumerate(mask_list):
         mask_array = cv2.resize(mask.astype(np.uint8), input_size)
         scaled_mask_array = np.reshape(mask_array, (input_size[0], input_size[1], 1))
         foreground = np.logical_or(foreground, scaled_mask_array)
     foreground = np.reshape(foreground, (1, input_size[0], input_size[1], 1))
 
-    # create the background mask
+    # Create the background mask
     background = 1 - foreground
 
-    # combine the background and foreground masks into a single array
+    # Combine the background and foreground masks into a single array
     final_mask_list = np.array(np.append(background, foreground, axis=3))
     return final_mask_list
 
-
+# Import data
 X = []
 Y = []
 data_dir = "../Masks/*.mat"
@@ -84,6 +84,7 @@ for filepath in tqdm(sorted(glob.glob(data_dir, recursive=True))):
 X = np.reshape(np.array(X), (-1, input_size[0], input_size[1], 3))
 Y = np.reshape(np.array(Y), (len(X), input_size[0], input_size[1], 2))
 
+# Calculate percentage of foreground pixels
 line_ratio = 0
 for image in Y[:, :, :, 0]:
     image = np.round(image, decimals=0)
@@ -96,12 +97,14 @@ print(line_ratio / len(Y))
 val_split = 0.15
 test_split = 0.15
 n = len(X)
+# Choose first index with rounding adjustment (0.5)
 sp1 = int(
     ((1 - val_split - test_split) * n) - 0.5
-)  # Choose first index with rounding adjustment (0.5)
+)
+# Choose first index with rounding adjustment (0.5)
 sp2 = int(
     ((1 - test_split) * n) - 0.5
-)  # Choose second index with rounding adjustment (0.5)
+)
 X_train, Y_train = X[:sp1], Y[:sp1]
 X_val, Y_val = X[sp1:sp2], Y[sp1:sp2]
 X_test, Y_test = X[sp2:], Y[sp2:]
@@ -111,7 +114,7 @@ print(
     )
 )
 
-
+# Define loss functions
 epsilon = tf.convert_to_tensor(K.epsilon(), np.float32)
 
 def dice_coef(y_true, y_pred):
@@ -154,7 +157,7 @@ def unbalanced_weighted_bce_plus_dice_coef_loss(y_true, y_pred):
 
 
 # Hyper parameters
-
+# Randomly choose hyperparameters from available options and ranges
 learning_rate = np.random.uniform(0.00001, 0.001)
 batch_size = np.random.randint(1,5) * 2
 optimizer_choice = np.random.randint(0,3)
@@ -222,7 +225,6 @@ print('Test loss: {:.5f}'.format(loss))
 print('Test accuracy: {:.5f}'.format(accuracy))
 print('Dice coef: {:.5f}'.format(dice))
 
-# TODO: Create file and save hyperparameters and test results
 hp_path = "./Hyperparameter-Search-Fixed/"
 os.makedirs(hp_path, exist_ok=True)
 
