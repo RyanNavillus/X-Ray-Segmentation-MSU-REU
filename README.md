@@ -2,6 +2,12 @@
 Activity tracking for Ryan, REU Summer 2019
 The goal of this project is to automatically segment lines in pediatric chest radiographs. The current approach utilizes a U-Net architecture, with a series of different backbones that replace the default U-Net encoder path.
 
+This research was submitted to SPIE Medical Imaging 2020 and presented at Mid-SURE 2019:
+
+IMAGE
+
+Sullivan, Holste, Alessio, "Deep Learning Methods for Automatic Evaluation of Lines in Chest Radiographs," MID-SURE Symposium, East Lansing, MI, 2019.
+
 ## File descriptions
 
 ### HPCC Training System
