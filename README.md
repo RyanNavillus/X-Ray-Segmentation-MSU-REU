@@ -4,8 +4,8 @@ The goal of this project is to automatically segment lines in pediatric chest ra
 
 This research was submitted to SPIE Medical Imaging 2020 and presented at Mid-SURE 2019:
 
-<object data="http://yoursite.com/the.pdf" type="application/pdf" width="700px" height="700px">
-    <embed src="http://yoursite.com/the.pdf">
+<object data="https://github.com/RyanNavillus/sullivan_ryan/blob/master/Final%20Presentation.pdf" type="application/pdf" width="700px" height="700px">
+    <embed src="https://github.com/RyanNavillus/sullivan_ryan/blob/master/Final%20Presentation.pdf">
         <p>This browser does not support PDFs. Please download the PDF to view it: <a href="http://yoursite.com/the.pdf">Download PDF</a>.</p>
     </embed>
 </object>
