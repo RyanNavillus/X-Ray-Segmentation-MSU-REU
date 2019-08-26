@@ -4,7 +4,7 @@ The goal of this project is to automatically segment lines in pediatric chest ra
 
 This research was submitted to SPIE Medical Imaging 2020 and presented at Mid-SURE 2019:
 
-![](https://github.com/RyanNavillus/sullivan_ryan/blob/master/Final%20Presentation.pdf)
+![Poster](https://github.com/RyanNavillus/sullivan_ryan/blob/master/Final%20Presentation.png)
 
 Sullivan, Holste, Alessio, "Deep Learning Methods for Automatic Evaluation of Lines in Chest Radiographs," MID-SURE Symposium, East Lansing, MI, 2019.
 
