@@ -1,5 +1,6 @@
 # Deep Learning Methods for Automatic Evaluation of Lines in Chest Radiographs
-Activity tracking for Ryan, REU Summer 2019
+National Science Foundation funded Research Experience for Undergraduates (REU) at Michigan State University Summer 2019
+
 The goal of this project is to automatically segment lines in pediatric chest radiographs. The current approach utilizes a U-Net architecture, with a series of different backbones that replace the default U-Net encoder path.
 
 This research was submitted to SPIE Medical Imaging 2020 and presented at Mid-SURE 2019:
