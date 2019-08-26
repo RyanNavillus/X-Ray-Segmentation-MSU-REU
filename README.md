@@ -1,17 +1,10 @@
-# sullivan_ryan
+# Deep Learning Methods for Automatic Evaluation of Lines in Chest Radiographs
 Activity tracking for Ryan, REU Summer 2019
 The goal of this project is to automatically segment lines in pediatric chest radiographs. The current approach utilizes a U-Net architecture, with a series of different backbones that replace the default U-Net encoder path.
 
-<div style="display:block; width:100%">
-    <img src="./Samples/1563654917.593671_prediction-3.png#thumbnail" alt="" width="49%" height="49%" style="display: inline" />
-    <img src="./Samples/True_prediction-3.png#thumbnail" alt="" width="49%" height="49%" style="display: inline" />
-</div>
-
-All data used in this project is from the rib fracture dataset. At the time of writing this, that is located on the Midi Lab workstation, CookieMonster, at `/data/mididata/rib_fracture_id/`
-
 ## File descriptions
 
-### HPCC Traininf System
+### HPCC Training System
 * **test_model.py** - trains a model using the hyperparameters defined at the top of the file. Saves important training information into the Training folder, training history into the History folder, model weights into the Weights folder, and sample predictions into the Sample_Predictions folder.
 * **generate_predictions.py** - imports the hyperparameters from the training file and weights from the weights file to save image predictions for the test set.
 * **view_masks.py** - displays the prediction using matplotlib. Change the matplotlib backend to work over X11 or locally.
