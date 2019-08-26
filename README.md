@@ -4,9 +4,15 @@ The goal of this project is to automatically segment lines in pediatric chest ra
 
 This research was submitted to SPIE Medical Imaging 2020 and presented at Mid-SURE 2019:
 
-IMAGE
+<object data="http://yoursite.com/the.pdf" type="application/pdf" width="700px" height="700px">
+    <embed src="http://yoursite.com/the.pdf">
+        <p>This browser does not support PDFs. Please download the PDF to view it: <a href="http://yoursite.com/the.pdf">Download PDF</a>.</p>
+    </embed>
+</object>
 
 Sullivan, Holste, Alessio, "Deep Learning Methods for Automatic Evaluation of Lines in Chest Radiographs," MID-SURE Symposium, East Lansing, MI, 2019.
+
+**NOTE**: The dataset is not publicly available and has been removed from this repository.
 
 ## File descriptions
 
@@ -16,7 +22,7 @@ Sullivan, Holste, Alessio, "Deep Learning Methods for Automatic Evaluation of Li
 * **view_masks.py** - displays the prediction using matplotlib. Change the matplotlib backend to work over X11 or locally.
 
 ### Model
-* **UNet-with-ResNet50.ipynb** - contains the code used to create and test the combined UNet + ResNet model. Used to generate **UNet-with-Resnet50.py**
+* **UNet-with-ResNet50.ipynb** - contains the code used to create and test the combined U-Net + ResNet model. Used to generate **UNet-with-Resnet50.py**
 * **Resnet-Classification.ipynb** - used to train the line/no line binary classification model
 * **gridsearch.py** - randomly selects hyperparameter values from predefined ranges. Performs a random hyperparameter search (which has been show to be more effective than grid search, albeit less easy to interpret). Written to run on the HPCC.
 
